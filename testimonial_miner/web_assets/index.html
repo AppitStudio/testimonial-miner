@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0b0d12">
+  <meta name="description" content="Private local dashboard for reviewing AppIt Studio testimonials.">
+  <title>Testimonial Review — AppIt Studio</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">“</div>
+        <div>
+          <div class="eyebrow">AppIt Studio</div>
+          <h1>Testimonial review</h1>
+        </div>
+      </div>
+      <div class="source-status">
+        <span class="local-dot" aria-hidden="true"></span>
+        <span>Local data</span>
+        <span class="source-divider" aria-hidden="true"></span>
+        <span id="updated-at">Loading…</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="overview" aria-label="Testimonial summary">
+        <article class="metric metric-candidate">
+          <span class="metric-label">Candidates</span>
+          <strong id="metric-candidates">—</strong>
+          <span class="metric-note">Ready for closer review</span>
+        </article>
+        <article class="metric metric-borderline">
+          <span class="metric-label">Borderline</span>
+          <strong id="metric-borderline">—</strong>
+          <span class="metric-note">Needs a human decision</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Strong signal</span>
+          <strong id="metric-strong">—</strong>
+          <span class="metric-note">Quality score 2.0 or higher</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label">Problem-free</span>
+          <strong id="metric-clean">—</strong>
+          <span class="metric-note">No issue detected in the email</span>
+        </article>
+        <article class="signal-card" aria-label="Quality distribution">
+          <div class="signal-heading">
+            <span class="metric-label">Quality distribution</span>
+            <span id="quality-average">— avg</span>
+          </div>
+          <div class="quality-bars" id="quality-bars"></div>
+          <div class="quality-axis"><span>1.0</span><span>2.0</span><span>3.0</span></div>
+        </article>
+      </section>
+
+      <section class="workspace" aria-label="Explore testimonials">
+        <div class="toolbar">
+          <label class="search-field" for="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+            <input id="search" type="search" placeholder="Search quotes, senders, subjects…" autocomplete="off">
+            <kbd>/</kbd>
+          </label>
+
+          <div class="segmented" id="status-filter" aria-label="Filter by status">
+            <button type="button" data-status="all" class="active" aria-pressed="true">All</button>
+            <button type="button" data-status="candidate" aria-pressed="false">Candidates</button>
+            <button type="button" data-status="borderline" aria-pressed="false">Borderline</button>
+          </div>
+
+          <label class="select-field">
+            <span>App</span>
+            <select id="app-filter"><option value="all">All apps</option></select>
+          </label>
+
+          <label class="select-field">
+            <span>Review</span>
+            <select id="review-filter"><option value="all">Any review</option></select>
+          </label>
+
+          <label class="toggle-field">
+            <input id="problem-filter" type="checkbox">
+            <span aria-hidden="true"></span>
+            Problem-free only
+          </label>
+
+          <label class="select-field sort-field">
+            <span>Sort</span>
+            <select id="sort-filter">
+              <option value="quality">Quality</option>
+              <option value="newest">Newest</option>
+              <option value="praise">Praise signal</option>
+              <option value="app">App</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="workspace-grid">
+          <section class="results-pane" aria-label="Filtered testimonials">
+            <div class="results-heading">
+              <p><strong id="result-count">0</strong> results</p>
+              <button type="button" class="text-button" id="clear-filters">Clear filters</button>
+            </div>
+            <div id="result-list" class="result-list" role="listbox" aria-label="Testimonials" tabindex="0">
+              <div class="loading-state">Loading local testimonials…</div>
+            </div>
+            <button type="button" id="show-more" class="show-more" hidden>Show more</button>
+          </section>
+
+          <aside class="detail-pane" id="detail-pane" aria-label="Selected testimonial details">
+            <div class="empty-detail">
+              <div class="empty-mark" aria-hidden="true">“</div>
+              <h2>Select a testimonial</h2>
+              <p>Choose an item to inspect its quote, confidence signals, and original email.</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>
