@@ -6,6 +6,7 @@ const state = {
   app: "all",
   review: "all",
   problemFree: false,
+  hidePersonalInfo: false,
   search: "",
   sort: "quality",
   visible: 80,
@@ -18,6 +19,7 @@ const resultCountEl = $("#result-count");
 const showMoreEl = $("#show-more");
 const toastEl = $("#toast");
 let toastTimer;
+const privacyStorageKey = "testimonial-miner-hide-personal-info";
 
 const escapeHtml = (value = "") => String(value)
   .replaceAll("&", "&amp;")
@@ -29,6 +31,24 @@ const escapeHtml = (value = "") => String(value)
 const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, Number(value) || 0));
 const percent = (value) => `${Math.round(clamp(value) * 100)}%`;
 const score = (value, digits = 2) => Number(value || 0).toFixed(digits);
+
+function redactPersonalText(item, value = "") {
+  let redacted = String(value).replace(
+    /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
+    "[email hidden]",
+  );
+  const senderName = String(item.from_name || "").trim();
+  if (senderName.length >= 2) {
+    const escapedName = senderName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    redacted = redacted.replace(new RegExp(escapedName, "gi"), "Customer");
+  }
+  return redacted;
+}
+
+function visibleQuote(item) {
+  const quote = item.quote || "No quote sentence was selected.";
+  return state.hidePersonalInfo ? redactPersonalText(item, quote) : quote;
+}
 
 function displayDate(value, withTime = false) {
   if (!value) return "Unknown date";
@@ -118,8 +138,10 @@ function applyFilters({ resetVisible = true } = {}) {
 
 function itemCard(item) {
   const selected = item.id === state.selectedId;
-  const sender = item.from_name || item.from_email || "Unknown sender";
-  const quote = item.quote || "No quote sentence was selected.";
+  const sender = state.hidePersonalInfo
+    ? "Anonymous customer"
+    : item.from_name || item.from_email || "Unknown sender";
+  const quote = visibleQuote(item);
   const issue = Number(item.mentions_problem) >= .5;
   return `
     <button class="result-card${selected ? " selected" : ""}" type="button"
@@ -168,6 +190,16 @@ function renderDetail() {
   }
   const sender = item.from_name || "Unknown sender";
   const email = item.from_email || "No email";
+  const attribution = state.hidePersonalInfo
+    ? `<strong>Anonymous customer</strong><span>·</span><span>${escapeHtml(displayDate(item.date))}</span>`
+    : `<strong>${escapeHtml(sender)}</strong><span>·</span><span>${escapeHtml(email)}</span><span>·</span><span>${escapeHtml(displayDate(item.date))}</span>`;
+  const subject = state.hidePersonalInfo
+    ? '<p class="detail-subject">Subject hidden in privacy mode</p>'
+    : `<p class="detail-subject">Subject: ${escapeHtml(item.subject || "No subject")}</p>`;
+  const originalEmail = state.hidePersonalInfo
+    ? `<div class="privacy-placeholder"><strong>Original email hidden</strong><span>Personal details are concealed while privacy mode is on.</span></div>`
+    : `<div class="section-heading"><h2>Original cleaned email</h2><span>${item.body_truncated ? "Trimmed to model limit" : "Complete cleaned body"}</span></div>
+      <pre class="email-body">${escapeHtml(item.body || "No cleaned body was stored.")}</pre>`;
   const reasons = (item.reasons || []).length
     ? `<div class="section-heading"><h2>Decision notes</h2></div><div class="reason-list">${item.reasons.map((reason) => `<span class="reason">${escapeHtml(reason)}</span>`).join("")}</div>`
     : "";
@@ -184,11 +216,9 @@ function renderDetail() {
         <span>Copy quote</span>
       </button>
     </div>
-    <blockquote class="hero-quote">“${escapeHtml(item.quote || "No quote sentence was selected.")}”</blockquote>
-    <div class="attribution">
-      <strong>${escapeHtml(sender)}</strong><span>·</span><span>${escapeHtml(email)}</span><span>·</span><span>${escapeHtml(displayDate(item.date))}</span>
-    </div>
-    <p class="detail-subject">Subject: ${escapeHtml(item.subject || "No subject")}</p>
+    <blockquote class="hero-quote">“${escapeHtml(visibleQuote(item))}”</blockquote>
+    <div class="attribution">${attribution}</div>
+    ${subject}
 
     <div class="score-grid">
       ${meterCard("Quality", Number(item.praise_quality) / 3, `${score(item.praise_quality, 2)} / 3`)}
@@ -198,8 +228,7 @@ function renderDetail() {
     </div>
 
     ${reasons}
-    <div class="section-heading"><h2>Original cleaned email</h2><span>${item.body_truncated ? "Trimmed to model limit" : "Complete cleaned body"}</span></div>
-    <pre class="email-body">${escapeHtml(item.body || "No cleaned body was stored.")}</pre>
+    ${originalEmail}
   </div>`;
 
   $("#copy-quote").addEventListener("click", () => copyQuote(item));
@@ -207,7 +236,10 @@ function renderDetail() {
 
 async function copyQuote(item) {
   const sender = item.from_name || item.from_email || "Customer";
-  const text = `“${item.quote || ""}” — ${sender}`;
+  const quote = state.hidePersonalInfo
+    ? redactPersonalText(item, item.quote || "")
+    : item.quote || "";
+  const text = state.hidePersonalInfo ? `“${quote}”` : `“${quote}” — ${sender}`;
   try {
     await navigator.clipboard.writeText(text);
   } catch {
@@ -257,6 +289,17 @@ function bindControls() {
   $("#problem-filter").addEventListener("change", (event) => {
     state.problemFree = event.target.checked;
     applyFilters();
+  });
+  $("#privacy-toggle").addEventListener("change", (event) => {
+    state.hidePersonalInfo = event.target.checked;
+    try {
+      localStorage.setItem(privacyStorageKey, String(state.hidePersonalInfo));
+    } catch {
+      // The dashboard still works if browser storage is unavailable.
+    }
+    renderResults();
+    renderDetail();
+    showToast(state.hidePersonalInfo ? "Personal info hidden" : "Personal info visible");
   });
   $("#sort-filter").addEventListener("change", (event) => {
     state.sort = event.target.value;
@@ -308,6 +351,12 @@ function bindControls() {
 }
 
 async function init() {
+  try {
+    state.hidePersonalInfo = localStorage.getItem(privacyStorageKey) === "true";
+  } catch {
+    state.hidePersonalInfo = false;
+  }
+  $("#privacy-toggle").checked = state.hidePersonalInfo;
   bindControls();
   try {
     const response = await fetch("/api/testimonials", { cache: "no-store" });

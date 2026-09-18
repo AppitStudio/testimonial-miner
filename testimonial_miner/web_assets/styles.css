@@ -187,6 +187,8 @@ kbd { border: 1px solid var(--line-strong); border-bottom-color: #424b5a; border
 .toggle-field input:checked + span { background: var(--cyan-soft); border-color: rgba(99,230,212,.55); }
 .toggle-field input:checked + span::after { transform: translateX(14px); background: var(--cyan); }
 .toggle-field input:focus-visible + span { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.privacy-toggle { color: var(--text); }
+.privacy-toggle > span { flex: 0 0 auto; }
 
 .workspace-grid { display: grid; grid-template-columns: minmax(390px, .9fr) minmax(460px, 1.45fr); height: calc(100vh - 294px); min-height: 560px; max-height: 860px; }
 .results-pane { min-width: 0; border-right: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
@@ -239,6 +241,9 @@ kbd { border: 1px solid var(--line-strong); border-bottom-color: #424b5a; border
 .section-heading h2 { margin: 0; font-size: .88rem; letter-spacing: .03em; }
 .section-heading span { color: var(--subtle); font-size: .7rem; }
 .email-body { margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: #0b0e13; color: #b8c0cc; font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: .77rem; line-height: 1.62; white-space: pre-wrap; overflow-wrap: anywhere; }
+.privacy-placeholder { margin-top: 28px; padding: 18px; border: 1px dashed rgba(99,230,212,.28); border-radius: 12px; background: var(--cyan-soft); color: var(--muted); }
+.privacy-placeholder strong { display: block; margin-bottom: 3px; color: var(--text); font-size: .86rem; }
+.privacy-placeholder span { font-size: .78rem; }
 .reason-list { display: flex; flex-wrap: wrap; gap: 6px; }
 .reason { border: 1px solid var(--line); border-radius: 7px; padding: 4px 7px; color: var(--muted); background: rgba(255,255,255,.02); font-size: .7rem; }
 .empty-detail { min-height: 100%; display: grid; place-content: center; justify-items: center; text-align: center; padding: 40px; color: var(--muted); }
@@ -275,6 +280,7 @@ kbd { border: 1px solid var(--line-strong); border-bottom-color: #424b5a; border
 @media (max-width: 580px) {
   .topbar { align-items: flex-start; padding: 15px 0; }
   .source-status { align-items: flex-end; flex-direction: column; gap: 2px; }
+  .source-status .privacy-toggle { width: auto; }
   .source-status .local-dot, .source-status .source-divider { display: none; }
   .overview { gap: 7px; padding: 12px 0; }
   .metric { min-height: 104px; padding: 13px; }

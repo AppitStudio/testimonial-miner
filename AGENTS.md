@@ -14,7 +14,8 @@ Owner: Asaf (AppIt Studio). Built 2026-09-18 with Claude Code. Status: **code co
 verified against the live TypeSafe API and both live Gmail mailboxes; the first full historical
 scan completed successfully; a private local dashboard is available for reviewing results;
 published at <https://github.com/AppitStudio/testimonial-miner> under MIT and proposed for
-the Community projects section of AppitStudio/awesome-jev**.
+the Community projects section of AppitStudio/awesome-jev via
+<https://github.com/AppitStudio/awesome-jev/pull/5>**.
 
 ## Mandatory: use the TypeSafe skill
 
